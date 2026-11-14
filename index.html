@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<style>
+  :root{
+    --paper:#f5f2ea; --card:#ffffff; --ink:#1f2523; --muted:#6b726f; --line:#e4dfd3;
+    --accent:#2f5d50; --accent-ink:#ffffff; --accent-soft:#e6efe9;
+    --warn:#8a5a00; --warn-bg:#fff4d6; --danger:#a8261b; --danger-bg:#fdecea;
+    --radius:14px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--paper);color:var(--ink);
+    font-family:Pretendard,-apple-system,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;font-size:15px;line-height:1.55}
+  .top{background:var(--accent);color:var(--accent-ink);padding:14px 18px;display:flex;align-items:center;justify-content:space-between;gap:10px}
+  .brand{font-weight:700;letter-spacing:-.2px}
+  .who{font-size:13px;opacity:.9}
+  main{max-width:680px;margin:0 auto;padding:16px 14px 80px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:18px;margin-bottom:14px}
+  h2{font-size:17px;margin:0 0 12px}
+  label{display:block;font-size:13px;color:var(--muted);margin:12px 0 6px}
+  input[type=text],input[type=tel],select,input[type=number]{width:100%;font:inherit;padding:11px 12px;border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--ink)}
+  input:focus,select:focus{outline:2px solid var(--accent);outline-offset:-1px}
+  .consent{display:flex;gap:8px;align-items:flex-start;font-size:13px;color:var(--muted);margin-top:14px}
+  .consent input{margin-top:3px}
+  .btn{font:inherit;border:0;border-radius:10px;padding:11px 16px;cursor:pointer;background:var(--accent);color:var(--accent-ink);font-weight:600}
+  .btn:disabled{opacity:.5;cursor:default}
+  .btn.ghost{background:transparent;color:var(--accent);border:1px solid var(--accent)}
+  .btn.plain{background:#f0ede5;color:var(--ink)}
+  .btn.danger{background:var(--danger-bg);color:var(--danger)}
+  .btn.sm{padding:7px 11px;font-size:13px}
+  .btn.block{width:100%;margin-top:16px}
+  .err{color:var(--danger);font-size:13px;margin-top:8px;min-height:1em}
+  .round-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+  .round-title{font-size:18px;font-weight:700}
+  .meta{font-size:13px;color:var(--muted)}
+  .bar{height:8px;background:#efebe1;border-radius:6px;margin-top:12px;overflow:hidden}
+  .bar>i{display:block;height:100%;background:var(--accent);width:0}
+  .bar.over>i{background:var(--danger)}
+  .sum-line{display:flex;justify-content:space-between;font-size:13px;margin-top:6px}
+  .over-text{color:var(--danger);font-weight:600}
+  .banner{background:var(--danger-bg);color:var(--danger);border-radius:10px;padding:10px 12px;font-size:14px;margin-top:12px}
+  .search{display:flex;gap:8px}
+  .search input{flex:1}
+  .hint{font-size:12px;color:var(--muted);margin-top:6px}
+  .book{display:flex;gap:12px;padding:14px 0;border-top:1px solid var(--line)}
+  .book:first-child{border-top:0}
+  .thumb{width:64px;height:92px;flex:none;border-radius:6px;background:#ece7db;object-fit:cover}
+  .info{flex:1;min-width:0}
+  .t{font-weight:700;word-break:keep-all}
+  .s{font-size:13px;color:var(--muted)}
+  .row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:6px}
+  .price{font-weight:700}
+  .badge{font-size:12px;padding:2px 8px;border-radius:20px;background:#f0ede5;color:var(--muted)}
+  .badge.warn{background:var(--warn-bg);color:var(--warn)}
+  .badge.bad{background:var(--danger-bg);color:var(--danger)}
+  .badge.ok{background:var(--accent-soft);color:var(--accent)}
+  a.kyobo{font-size:13px;color:var(--accent);text-decoration:none;border-bottom:1px solid currentColor}
+  .spacer{flex:1}
+  .pickbox{background:#faf8f3;border:1px solid var(--line);border-radius:10px;padding:12px;margin-top:10px}
+  .qty{display:inline-flex;align-items:center;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:#fff}
+  .qty button{font:inherit;border:0;background:#fff;width:36px;height:36px;cursor:pointer}
+  .qty span{min-width:34px;text-align:center;font-weight:700}
+  .pickbox input[type=text]{margin-top:8px}
+  .empty{color:var(--muted);font-size:14px;padding:6px 0}
+  .more{margin-top:10px;text-align:center}
+  .req{padding:14px 0;border-top:1px solid var(--line)}
+  .req:first-child{border-top:0}
+  .list-head{display:flex;justify-content:space-between;align-items:baseline}
+  .modal{position:fixed;inset:0;background:rgba(20,24,22,.45);display:flex;align-items:flex-end;justify-content:center;z-index:20}
+  .modal[hidden]{display:none}
+  .sheet{background:#fff;width:100%;max-width:520px;border-radius:18px 18px 0 0;padding:20px 18px 22px}
+  @media(min-width:600px){.modal{align-items:center}.sheet{border-radius:18px}}
+  .sheet h3{margin:0 0 10px;font-size:17px}
+  .sheet ul{margin:0;padding-left:18px}
+  .sheet li{margin:6px 0;white-space:pre-line}
+  .actions{display:flex;gap:8px;justify-content:flex-end;margin-top:18px}
+  .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#1f2523;color:#fff;padding:10px 16px;border-radius:30px;font-size:14px;opacity:0;transition:opacity .25s;pointer-events:none;z-index:30}
+  .toast.on{opacity:1}
+  .loading{color:var(--muted);font-size:14px;padding:10px 0}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="brand">연구회 도서구매신청</div>
+  <div class="who" id="who"></div>
+</header>
+
+<main>
+  <!-- 입장 -->
+  <section id="v-enter">
+    <div class="card">
+      <h2>신청하러 들어가기</h2>
+      <label for="round">연구회(일자)</label>
+      <select id="round"><option value="">불러오는 중…</option></select>
+      <label for="name">이름</label>
+      <input type="text" id="name" autocomplete="name" placeholder="홍길동">
+      <label for="phone">휴대폰 번호</label>
+      <input type="tel" id="phone" inputmode="numeric" autocomplete="tel" placeholder="010-1234-5678">
+      <div class="consent">
+        <input type="checkbox" id="agree">
+        <label for="agree" style="margin:0;color:inherit">도서 구매 신청 확인과 연락을 위해 이름과 휴대폰 번호를 수집하는 데 동의합니다. 수집한 정보는 연구회 도서 구매·정산에만 쓰입니다.</label>
+      </div>
+      <div class="err" id="enterErr"></div>
+      <button class="btn block" id="enterBtn">들어가기</button>
+      <p class="hint">처음 입력한 이름과 번호로 다시 들어오면 내 신청을 고치거나 더할 수 있어요.</p>
+    </div>
+  </section>
+
+  <!-- 신청 -->
+  <section id="v-main" hidden>
+    <div class="card">
+      <div class="round-head">
+        <div>
+          <div class="round-title" id="rTitle"></div>
+          <div class="meta" id="rMeta"></div>
+        </div>
+        <button class="btn plain sm" id="exitBtn">나가기</button>
+      </div>
+      <div id="limitBox">
+        <div class="bar" id="bar"><i></i></div>
+        <div class="sum-line"><span id="usedText"></span><span id="limitText"></span></div>
+      </div>
+      <div class="banner" id="closed" hidden>신청이 마감되었어요. 내 신청 내역만 볼 수 있어요.</div>
+    </div>
+
+    <div class="card" id="searchCard">
+      <h2>도서 찾기</h2>
+      <div class="search">
+        <input type="text" id="q" placeholder="예: 위대한 개츠비" enterkeyhint="search">
+        <button class="btn" id="searchBtn">검색</button>
+      </div>
+      <div class="hint">제목 일부만 적어도 돼요. ISBN으로도 찾을 수 있어요. 판본(출판사·역자)을 꼭 확인해 주세요.</div>
+      <div id="results"></div>
+      <div class="more" id="moreBox" hidden><button class="btn ghost sm" id="moreBtn">결과 더 보기</button></div>
+    </div>
+
+    <div class="card">
+      <div class="list-head">
+        <h2>내 신청 목록</h2>
+        <span class="meta" id="listSum"></span>
+      </div>
+      <div id="myList"></div>
+    </div>
+  </section>
+</main>
+
+<div class="modal" id="modal" hidden>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="mTitle">
+    <h3 id="mTitle"></h3>
+    <div id="mBody"></div>
+    <div class="actions">
+      <button class="btn plain" id="mCancel">취소</button>
+      <button class="btn" id="mOk">계속 진행</button>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script src="config.js"></script>
+<script>const PRE_ROUND = new URLSearchParams(location.search).get('r') || '';</script>
+<script>
+  const S = { rounds: [], round: null, name: '', phone: '', requests: [], results: [], query: '', page: 1, isEnd: true, picked: -1, editing: '' };
+  const $ = id => document.getElementById(id);
+
+  async function call(action, payload) {
+    const url = (window.APP_CONFIG && APP_CONFIG.API_URL) || '';
+    if (!/^https:\/\/script\.google\.com\/.+\/exec$/.test(url)) throw new Error('config.js에 Apps Script API 주소(…/exec)를 넣어 주세요.');
+    let res;
+    try {
+      res = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify(Object.assign({ action: action }, payload || {}))
+      });
+    } catch (e) { throw new Error('서버에 연결하지 못했어요. 인터넷 연결을 확인하고 다시 시도해 주세요.'); }
+    if (!res.ok) throw new Error('서버 응답 오류 (' + res.status + ')');
+    let j;
+    try { j = await res.json(); } catch (e) { throw new Error('서버 응답을 읽지 못했어요. Apps Script 배포의 액세스 권한이 「모든 사용자」인지 확인해 주세요.'); }
+    if (!j.ok) throw new Error(j.error || '알 수 없는 오류');
+    return j.data;
+  }
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  }
+  function won(n) { return (Number(n) || 0).toLocaleString('ko-KR') + '원'; }
+  function errMsg(e) { return (e && e.message ? e.message : String(e)).replace(/^Error:\s*/, '').replace(/^Exception:\s*/, ''); }
+  function toast(msg) {
+    const t = $('toast'); t.textContent = msg; t.classList.add('on');
+    clearTimeout(toast._t); toast._t = setTimeout(() => t.classList.remove('on'), 2200);
+  }
+  function busy(btn, on, text) {
+    if (!btn) return;
+    if (on) { btn.dataset.label = btn.textContent; btn.textContent = text || '처리 중…'; btn.disabled = true; }
+    else { btn.textContent = btn.dataset.label || btn.textContent; btn.disabled = false; }
+  }
+
+  /* 확인 모달 */
+  function ask(title, items, okText, noCancel) {
+    return new Promise(resolve => {
+      $('mCancel').hidden = !!noCancel;
+      $('mTitle').textContent = title;
+      $('mBody').innerHTML = '<ul>' + items.map(i => '<li>' + esc(i) + '</li>').join('') + '</ul>';
+      $('mOk').textContent = okText || '계속 진행';
+      $('modal').hidden = false;
+      const done = v => { $('modal').hidden = true; $('mOk').onclick = null; $('mCancel').onclick = null; resolve(v); };
+      $('mOk').onclick = () => done(true);
+      $('mCancel').onclick = () => done(false);
+    });
+  }
+
+  /* 입장 */
+  function loadRounds() {
+    call('getRounds').then(list => {
+      S.rounds = list;
+      const sel = $('round');
+      if (!list.length) { sel.innerHTML = '<option value="">열린 신청이 없어요</option>'; return; }
+      sel.innerHTML = '<option value="">선택해 주세요</option>' + list.map(r =>
+        '<option value="' + esc(r.id) + '">' + esc(r.label) + (r.open ? '' : ' · 마감') + '</option>').join('');
+      if (PRE_ROUND && list.some(r => r.id === PRE_ROUND)) sel.value = PRE_ROUND;
+    }).catch(e => { $('round').innerHTML = '<option value="">불러오지 못했어요</option>'; $('enterErr').textContent = errMsg(e); });
+  }
+
+  function enter() {
+    const roundId = $('round').value, name = $('name').value.trim(), phone = $('phone').value.trim();
+    $('enterErr').textContent = '';
+    if (!roundId) return $('enterErr').textContent = '연구회(일자)를 골라 주세요.';
+    if (!name) return $('enterErr').textContent = '이름을 입력해 주세요.';
+    if (phone.replace(/\D/g, '').length < 10) return $('enterErr').textContent = '휴대폰 번호를 확인해 주세요.';
+    if (!$('agree').checked) return $('enterErr').textContent = '개인정보 수집에 동의해 주세요.';
+    const btn = $('enterBtn'); busy(btn, true, '확인 중…');
+    call('enter', { roundId: roundId, name: name, phone: phone }).then(res => {
+      S.round = res.round; S.name = res.name; S.phone = res.phone; S.requests = res.requests;
+      S.results = []; S.query = ''; S.picked = -1; S.editing = '';
+      $('v-enter').hidden = true; $('v-main').hidden = false;
+      $('who').textContent = S.name + ' 님';
+      $('results').innerHTML = ''; $('moreBox').hidden = true; $('q').value = '';
+      renderRound(); renderList();
+      window.scrollTo(0, 0);
+    }).catch(e => { $('enterErr').textContent = errMsg(e); }).finally(() => busy(btn, false));
+  }
+
+  function exit() {
+    $('v-main').hidden = true; $('v-enter').hidden = false; $('who').textContent = '';
+    loadRounds();
+  }
+
+  /* 회차 정보·한도 */
+  function activeTotal() {
+    return S.requests.filter(r => r.status !== '취소').reduce((s, r) => s + r.amount, 0);
+  }
+  function renderRound() {
+    const r = S.round;
+    $('rTitle').textContent = r.label;
+    $('rMeta').textContent = r.deadlineText ? '신청 마감 ' + r.deadlineText : '마감일 없음';
+    $('closed').hidden = r.open;
+    $('searchCard').hidden = !r.open;
+    const used = activeTotal();
+    if (r.limit > 0) {
+      $('limitBox').hidden = false;
+      const pct = Math.min(100, used / r.limit * 100);
+      $('bar').querySelector('i').style.width = pct + '%';
+      $('bar').classList.toggle('over', used > r.limit);
+      $('usedText').innerHTML = '내 신청 ' + won(used) + (used > r.limit ? ' <span class="over-text">· ' + won(used - r.limit) + ' 초과</span>' : '');
+      $('limitText').textContent = '1인 한도 ' + won(r.limit);
+    } else {
+      $('limitBox').hidden = false;
+      $('bar').querySelector('i').style.width = '0';
+      $('usedText').textContent = '내 신청 ' + won(used);
+      $('limitText').textContent = '1인 한도 없음';
+    }
+  }
+
+  /* 검색 */
+  function search(page) {
+    const q = $('q').value.trim();
+    if (!q) { $('q').focus(); return; }
+    if (page === 1) { S.results = []; S.picked = -1; $('results').innerHTML = '<div class="loading">찾는 중…</div>'; }
+    const btn = page === 1 ? $('searchBtn') : $('moreBtn'); busy(btn, true, '찾는 중…');
+    call('searchBooks', { query: q, page: page }).then(res => {
+      S.query = q; S.page = res.page; S.isEnd = res.isEnd;
+      S.results = S.results.concat(res.items);
+      renderResults();
+    }).catch(e => { $('results').innerHTML = '<div class="err">' + esc(errMsg(e)) + '</div>'; })
+      .finally(() => busy(btn, false));
+  }
+
+  function statusBadge(st) {
+    if (!st) return '';
+    if (/품절|절판/.test(st)) return '<span class="badge bad">' + esc(st) + '</span>';
+    return '<span class="badge">' + esc(st) + '</span>';
+  }
+
+  function renderResults() {
+    if (!S.results.length) {
+      $('results').innerHTML = '<div class="empty">검색 결과가 없어요. 띄어쓰기를 바꾸거나 제목 일부만 넣어 보세요.</div>';
+      $('moreBox').hidden = true; return;
+    }
+    const mineIsbn = new Set(S.requests.filter(r => r.status !== '취소').map(r => r.isbn).filter(Boolean));
+    $('results').innerHTML = S.results.map((b, i) => {
+      const thumb = b.thumbnail ? '<img class="thumb" src="' + esc(b.thumbnail) + '" alt="" loading="lazy">' : '<div class="thumb"></div>';
+      const who = [b.authors, b.translators ? b.translators + ' 옮김' : ''].filter(Boolean).join(' · ');
+      const pick = S.picked === i ? pickBox(i) : '';
+      return '<div class="book">' + thumb + '<div class="info">' +
+        '<div class="t">' + esc(b.title) + '</div>' +
+        (who ? '<div class="s">' + esc(who) + '</div>' : '') +
+        '<div class="s">' + esc([b.publisher, b.pubDate].filter(Boolean).join(' · ')) + (b.isbn ? ' · ISBN ' + esc(b.isbn) : '') + '</div>' +
+        '<div class="row"><span class="price">정가 ' + won(b.price) + '</span>' + statusBadge(b.saleStatus) +
+          (mineIsbn.has(b.isbn) ? '<span class="badge warn">이미 신청함</span>' : '') + '</div>' +
+        '<div class="row"><a class="kyobo" href="' + esc(b.kyobo) + '" target="_blank" rel="noopener">교보문고에서 보기 ↗</a><span class="spacer"></span>' +
+          (S.picked === i ? '' : '<button class="btn sm" data-pick="' + i + '">이 책 선택</button>') + '</div>' +
+        pick + '</div></div>';
+    }).join('');
+    $('moreBox').hidden = S.isEnd;
+  }
+
+  function pickBox(i) {
+    return '<div class="pickbox" data-box="' + i + '">' +
+      '<div class="row"><span class="meta">수량</span>' +
+      '<div class="qty"><button data-dec="' + i + '" aria-label="한 권 빼기">−</button><span id="pq">1</span><button data-inc="' + i + '" aria-label="한 권 더하기">+</button></div>' +
+      '<span class="spacer"></span><span class="price" id="pAmt">' + won(S.results[i].price) + '</span></div>' +
+      '<input type="text" id="pNote" maxlength="200" placeholder="비고 (선택, 예: 1학기 수업용)">' +
+      '<div class="row" style="justify-content:flex-end;margin-top:10px">' +
+      '<button class="btn plain sm" data-unpick="1">닫기</button><button class="btn sm" id="pSubmit" data-submit="' + i + '">신청하기</button></div></div>';
+  }
+
+  function submit(i, confirmed) {
+    const b = S.results[i];
+    const qty = Number($('pq').textContent) || 1;
+    const note = $('pNote').value.trim();
+    const btn = $('pSubmit'); busy(btn, true, '저장 중…');
+    call('submitRequest', { roundId: S.round.id, name: S.name, phone: S.phone, book: b, qty: qty, note: note, confirmed: !!confirmed })
+      .then(res => {
+        if (res.needConfirm) {
+          busy(btn, false);
+          return ask('확인해 주세요', res.warnings, '그래도 신청').then(ok => { if (ok) submit(i, true); });
+        }
+        S.requests = res.requests; S.picked = -1;
+        renderRound(); renderResults(); renderList();
+        toast('신청했어요');
+      })
+      .catch(e => { busy(btn, false); handleErr(e); });
+  }
+
+  /* 내 신청 목록 */
+  function renderList() {
+    const list = S.requests;
+    const act = list.filter(r => r.status !== '취소');
+    $('listSum').textContent = act.length ? act.reduce((s, r) => s + r.qty, 0) + '권 · ' + won(activeTotal()) : '';
+    if (!list.length) { $('myList').innerHTML = '<div class="empty">아직 신청한 책이 없어요.</div>'; return; }
+    const canEdit = S.round.open;
+    $('myList').innerHTML = list.map(r => {
+      const st = r.status === '접수' ? 'ok' : (r.status === '취소' ? 'bad' : 'warn');
+      const tags = r.warn ? r.warn.split(',').map(t => t.trim()).filter(Boolean).map(t => '<span class="badge warn">' + esc(t) + '</span>').join('') : '';
+      const editable = canEdit && r.status === '접수';
+      let edit = '';
+      if (S.editing === r.id) {
+        edit = '<div class="pickbox"><div class="row"><span class="meta">수량</span>' +
+          '<div class="qty"><button data-edec="1" aria-label="한 권 빼기">−</button><span id="eq">' + r.qty + '</span><button data-einc="1" aria-label="한 권 더하기">+</button></div>' +
+          '<span class="spacer"></span><span class="price" id="eAmt">' + won(r.price * r.qty) + '</span></div>' +
+          '<input type="text" id="eNote" maxlength="200" placeholder="비고" value="' + esc(r.note) + '">' +
+          '<div class="row" style="justify-content:flex-end;margin-top:10px">' +
+          '<button class="btn plain sm" data-ecancel="1">닫기</button><button class="btn sm" id="eSave" data-esave="' + esc(r.id) + '">저장</button></div></div>';
+      }
+      return '<div class="req">' +
+        '<div class="row" style="margin-top:0"><span class="t" style="flex:1">' + esc(r.title) + '</span><span class="badge ' + st + '">' + esc(r.status) + '</span></div>' +
+        '<div class="s">' + esc([r.authors, r.translators ? r.translators + ' 옮김' : '', r.publisher].filter(Boolean).join(' · ')) + '</div>' +
+        '<div class="row"><span>' + won(r.price) + ' × ' + r.qty + '권 = <b>' + won(r.amount) + '</b></span>' + tags + '</div>' +
+        (r.note ? '<div class="s">비고: ' + esc(r.note) + '</div>' : '') +
+        '<div class="row">' + (r.kyobo ? '<a class="kyobo" href="' + esc(r.kyobo) + '" target="_blank" rel="noopener">교보문고에서 보기 ↗</a>' : '') +
+        '<span class="spacer"></span>' +
+        (editable && S.editing !== r.id ? '<button class="btn plain sm" data-edit="' + esc(r.id) + '">수정</button><button class="btn danger sm" data-del="' + esc(r.id) + '">삭제</button>' : '') +
+        '</div>' + edit + '</div>';
+    }).join('');
+  }
+
+  function saveEdit(id, confirmed) {
+    const qty = Number($('eq').textContent) || 1;
+    const note = $('eNote').value.trim();
+    const btn = $('eSave'); busy(btn, true, '저장 중…');
+    call('updateRequest', { roundId: S.round.id, name: S.name, phone: S.phone, id: id, qty: qty, note: note, confirmed: !!confirmed })
+      .then(res => {
+        if (res.needConfirm) {
+          busy(btn, false);
+          return ask('확인해 주세요', res.warnings, '그래도 저장').then(ok => { if (ok) saveEdit(id, true); });
+        }
+        S.requests = res.requests; S.editing = '';
+        renderRound(); renderList(); toast('고쳤어요');
+      })
+      .catch(e => { busy(btn, false); handleErr(e); });
+  }
+
+  function del(id) {
+    const r = S.requests.find(x => x.id === id);
+    ask('신청을 지울까요?', [r.title + ' · ' + r.qty + '권'], '지우기').then(ok => {
+      if (!ok) return;
+      call('deleteRequest', { roundId: S.round.id, name: S.name, phone: S.phone, id: id })
+        .then(res => { S.requests = res.requests; renderRound(); renderList(); if (S.results.length) renderResults(); toast('지웠어요'); })
+        .catch(handleErr);
+    });
+  }
+
+  function handleErr(e) {
+    const msg = errMsg(e);
+    if (/마감/.test(msg)) { S.round.open = false; renderRound(); renderList(); }
+    ask('알림', [msg], '확인', true);
+  }
+
+  /* 이벤트 */
+  $('enterBtn').onclick = enter;
+  $('phone').addEventListener('keydown', e => { if (e.key === 'Enter') enter(); });
+  $('exitBtn').onclick = exit;
+  $('searchBtn').onclick = () => search(1);
+  $('q').addEventListener('keydown', e => { if (e.key === 'Enter') search(1); });
+  $('moreBtn').onclick = () => search(S.page + 1);
+
+  $('results').addEventListener('click', e => {
+    const t = e.target.closest('button'); if (!t) return;
+    if (t.dataset.pick) { S.picked = Number(t.dataset.pick); renderResults(); return; }
+    if (t.dataset.unpick) { S.picked = -1; renderResults(); return; }
+    if (t.dataset.inc || t.dataset.dec) {
+      const q = $('pq'); let n = Number(q.textContent) + (t.dataset.inc ? 1 : -1);
+      n = Math.max(1, Math.min(99, n)); q.textContent = n;
+      $('pAmt').textContent = won(S.results[S.picked].price * n); return;
+    }
+    if (t.dataset.submit) submit(Number(t.dataset.submit), false);
+  });
+
+  $('myList').addEventListener('click', e => {
+    const t = e.target.closest('button'); if (!t) return;
+    if (t.dataset.edit) { S.editing = t.dataset.edit; renderList(); return; }
+    if (t.dataset.ecancel) { S.editing = ''; renderList(); return; }
+    if (t.dataset.einc || t.dataset.edec) {
+      const r = S.requests.find(x => x.id === S.editing);
+      const q = $('eq'); let n = Number(q.textContent) + (t.dataset.einc ? 1 : -1);
+      n = Math.max(1, Math.min(99, n)); q.textContent = n;
+      $('eAmt').textContent = won(r.price * n); return;
+    }
+    if (t.dataset.esave) { saveEdit(t.dataset.esave, false); return; }
+    if (t.dataset.del) del(t.dataset.del);
+  });
+
+  loadRounds();
+</script>
+</body>
+</html>

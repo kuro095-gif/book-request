@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<style>
+  :root{
+    --paper:#f5f2ea; --card:#fff; --ink:#1f2523; --muted:#6b726f; --line:#e4dfd3;
+    --accent:#2f5d50; --accent-soft:#e6efe9; --warn:#8a5a00; --warn-bg:#fff4d6; --danger:#a8261b; --danger-bg:#fdecea;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--paper);color:var(--ink);
+    font-family:Pretendard,-apple-system,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;font-size:14px;line-height:1.5}
+  .top{background:var(--accent);color:#fff;padding:14px 20px;display:flex;align-items:center;gap:12px}
+  .brand{font-weight:700}
+  .top .meta{color:#d7e5df}
+  main{max-width:1100px;margin:0 auto;padding:18px 16px 60px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px;margin-bottom:14px}
+  h2{font-size:16px;margin:0 0 12px}
+  .meta{font-size:12px;color:var(--muted)}
+  input,select{font:inherit;padding:9px 11px;border:1px solid var(--line);border-radius:9px;background:#fff;color:var(--ink)}
+  .btn{font:inherit;border:0;border-radius:9px;padding:9px 14px;cursor:pointer;background:var(--accent);color:#fff;font-weight:600;text-decoration:none;display:inline-block}
+  .btn.ghost{background:#fff;color:var(--accent);border:1px solid var(--accent)}
+  .btn:disabled{opacity:.5}
+  .toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+  .spacer{flex:1}
+  .login{max-width:380px;margin:60px auto}
+  .login input{width:100%;margin:8px 0 12px}
+  .err{color:var(--danger);font-size:13px;min-height:1em}
+  .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-bottom:14px}
+  .kpi{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px}
+  .kpi .v{font-size:24px;font-weight:700;margin-top:2px}
+  .kpi.alert .v{color:var(--danger)}
+  .chips{display:flex;gap:8px;flex-wrap:wrap}
+  .chip{background:#f0ede5;border-radius:20px;padding:4px 11px;font-size:13px}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  @media(max-width:860px){.grid2{grid-template-columns:1fr}}
+  .tbl-wrap{overflow-x:auto}
+  table{border-collapse:collapse;width:100%;font-size:13px}
+  th,td{padding:8px 8px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+  th{color:var(--muted);font-weight:600;white-space:nowrap;background:#faf8f3;position:sticky;top:0}
+  td.num,th.num{text-align:right;white-space:nowrap}
+  tr.over td{background:var(--warn-bg)}
+  .tag{font-size:11px;padding:1px 7px;border-radius:12px;background:var(--danger-bg);color:var(--danger);white-space:nowrap}
+  .scroll{max-height:460px;overflow:auto}
+  .exp{display:flex;gap:8px;flex-wrap:wrap}
+  .exp .btn{display:flex;flex-direction:column;align-items:flex-start;text-align:left;min-width:200px}
+  .exp small{font-weight:400;opacity:.85}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="brand">도서신청 관리자</div>
+  <span class="meta" id="updated"></span>
+  <span class="spacer"></span>
+  <a class="btn ghost" id="sheetLink" target="_blank" rel="noopener" hidden>구글 시트 열기 ↗</a>
+</header>
+
+<main>
+  <section id="v-login" class="card login">
+    <h2>관리자 로그인</h2>
+    <input type="password" id="pw" placeholder="관리자 비밀번호" autocomplete="current-password">
+    <div class="err" id="loginErr"></div>
+    <button class="btn" id="loginBtn" style="width:100%">들어가기</button>
+  </section>
+
+  <section id="v-main" hidden>
+    <div class="card toolbar">
+      <label for="roundSel" class="meta">연구회(일자)</label>
+      <select id="roundSel"></select>
+      <span class="meta" id="roundInfo"></span>
+      <span class="spacer"></span>
+      <button class="btn ghost" id="reloadBtn">새로고침</button>
+    </div>
+
+    <div class="kpis">
+      <div class="kpi"><div class="meta">신청 회원</div><div class="v" id="kMembers">0</div></div>
+      <div class="kpi"><div class="meta">신청 권수</div><div class="v" id="kBooks">0</div></div>
+      <div class="kpi"><div class="meta">신청 총액 (정가 기준)</div><div class="v" id="kTotal">0원</div></div>
+      <div class="kpi" id="kOverBox"><div class="meta">한도 초과 회원</div><div class="v" id="kOver">0</div></div>
+    </div>
+
+    <div class="card">
+      <h2>상태별</h2>
+      <div class="chips" id="statusChips"></div>
+      <p class="meta" style="margin:10px 0 0">상태·수량 변경과 신청 정리는 구글 시트 [신청내역]에서 바로 고치면 돼요. 고친 뒤 [새로고침]을 누르세요.</p>
+    </div>
+
+    <div class="grid2">
+      <div class="card">
+        <h2>회원별 현황</h2>
+        <div class="tbl-wrap scroll"><table id="memberTbl"></table></div>
+      </div>
+      <div class="card">
+        <h2>도서별 묶음 <span class="meta">(같은 ISBN 합산)</span></h2>
+        <div class="tbl-wrap scroll"><table id="bookTbl"></table></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>엑셀 내보내기</h2>
+      <div class="exp">
+        <button class="btn" data-exp="member">회원 확인용<small>회원별 목록·소계, 번호 가림</small></button>
+        <button class="btn" data-exp="order">주문용<small>도서별 수량 합계, 교보 링크</small></button>
+        <button class="btn ghost" data-exp="raw">전체 원본<small>취소 포함 모든 열</small></button>
+      </div>
+      <p class="meta" style="margin:10px 0 0">위에서 고른 연구회(일자) 범위로 내보내요. 취소 건은 회원 확인용·주문용에서 빠집니다.</p>
+    </div>
+  </section>
+</main>
+
+<script src="config.js"></script>
+<script>
+  const A = { token: '', data: null };
+  const $ = id => document.getElementById(id);
+  async function call(action, payload) {
+    const url = (window.APP_CONFIG && APP_CONFIG.API_URL) || '';
+    if (!/^https:\/\/script\.google\.com\/.+\/exec$/.test(url)) throw new Error('config.js에 Apps Script API 주소(…/exec)를 넣어 주세요.');
+    let res;
+    try {
+      res = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify(Object.assign({ action: action }, payload || {}))
+      });
+    } catch (e) { throw new Error('서버에 연결하지 못했어요. 인터넷 연결을 확인하고 다시 시도해 주세요.'); }
+    if (!res.ok) throw new Error('서버 응답 오류 (' + res.status + ')');
+    let j;
+    try { j = await res.json(); } catch (e) { throw new Error('서버 응답을 읽지 못했어요. Apps Script 배포의 액세스 권한이 「모든 사용자」인지 확인해 주세요.'); }
+    if (!j.ok) throw new Error(j.error || '알 수 없는 오류');
+    return j.data;
+  }
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
+  function won(n) { return (Number(n) || 0).toLocaleString('ko-KR') + '원'; }
+  function errMsg(e) { return (e && e.message ? e.message : String(e)).replace(/^(Error|Exception):\s*/, ''); }
+  function mask(p) { const d = String(p || '').replace(/\D/g, ''); return d.length >= 10 ? d.slice(0, 3) + '-****-' + d.slice(-4) : p; }
+  function today() { const d = new Date(); return d.getFullYear() + String(d.getMonth() + 1).padStart(2, '0') + String(d.getDate()).padStart(2, '0'); }
+
+  function login() {
+    const btn = $('loginBtn'); btn.disabled = true; $('loginErr').textContent = '';
+    call('adminLogin', { password: $('pw').value }).then(t => { A.token = t; return load(); })
+      .then(() => { $('v-login').hidden = true; $('v-main').hidden = false; })
+      .catch(e => { $('loginErr').textContent = errMsg(e); })
+      .finally(() => { btn.disabled = false; });
+  }
+
+  function load() {
+    $('reloadBtn').disabled = true;
+    return call('adminGetData', { token: A.token }).then(d => {
+      A.data = d;
+      $('updated').textContent = d.updated + ' 기준';
+      $('sheetLink').href = d.sheetUrl; $('sheetLink').hidden = false;
+      const sel = $('roundSel'), prev = sel.value;
+      sel.innerHTML = '<option value="">전체</option>' + d.rounds.map(r =>
+        '<option value="' + esc(r.id) + '">' + esc(r.label) + (r.open ? '' : ' · 마감') + (r.use ? '' : ' · 숨김') + '</option>').join('');
+      if (prev && d.rounds.some(r => r.id === prev)) sel.value = prev;
+      else { const open = d.rounds.find(r => r.open && r.use); if (open) sel.value = open.id; }
+      render();
+    }).catch(e => {
+      if (/로그인/.test(errMsg(e))) { $('v-main').hidden = true; $('v-login').hidden = false; $('loginErr').textContent = errMsg(e); }
+      else alert(errMsg(e));
+      throw e;
+    }).finally(() => { $('reloadBtn').disabled = false; });
+  }
+
+  function scope() {
+    const id = $('roundSel').value;
+    return A.data.requests.filter(r => !id || String(r['회차ID']) === id);
+  }
+  function roundMap() { const m = {}; A.data.rounds.forEach(r => m[r.id] = r); return m; }
+
+  function memberGroups(rows) {
+    const rm = roundMap(), g = {};
+    rows.filter(r => r['상태'] !== '취소').forEach(r => {
+      const k = r['회차ID'] + '|' + String(r['이름']).replace(/\s+/g, '') + '|' + String(r['휴대폰']).replace(/\D/g, '');
+      if (!g[k]) g[k] = { roundId: r['회차ID'], label: r['연구회(일자)'], name: r['이름'], phone: r['휴대폰'], books: 0, amount: 0, items: [], limit: (rm[r['회차ID']] || {}).limit || 0 };
+      g[k].books += r['수량']; g[k].amount += r['금액']; g[k].items.push(r);
+    });
+    return Object.values(g).map(x => (x.over = x.limit > 0 ? Math.max(0, x.amount - x.limit) : 0, x))
+      .sort((a, b) => (b.over - a.over) || (b.amount - a.amount));
+  }
+
+  function bookGroups(rows) {
+    const g = {};
+    rows.filter(r => r['상태'] !== '취소').forEach(r => {
+      const k = r['ISBN'] || (r['도서명'] + '|' + r['출판사']);
+      if (!g[k]) g[k] = { title: r['도서명'], authors: r['저자'], translators: r['역자'], publisher: r['출판사'], isbn: r['ISBN'], price: r['정가'], qty: 0, amount: 0, names: [], kyobo: r['교보문고'], soldout: /품절|절판/.test(r['판매상태'] || '') };
+      g[k].qty += r['수량']; g[k].amount += r['금액'];
+      if (g[k].names.indexOf(r['이름']) < 0) g[k].names.push(r['이름']);
+    });
+    return Object.values(g).sort((a, b) => b.qty - a.qty || String(a.title).localeCompare(String(b.title), 'ko'));
+  }
+
+  function render() {
+    const id = $('roundSel').value, r = id ? roundMap()[id] : null;
+    $('roundInfo').textContent = r ? (r.deadlineText ? '마감 ' + r.deadlineText : '마감일 없음') + (r.limit ? ' · 1인 한도 ' + won(r.limit) : ' · 한도 없음') + (r.open ? ' · 신청 중' : ' · 마감됨') : '';
+    const rows = scope(), act = rows.filter(x => x['상태'] !== '취소');
+    const members = memberGroups(rows), books = bookGroups(rows);
+    $('kMembers').textContent = members.length + '명';
+    $('kBooks').textContent = act.reduce((s, x) => s + x['수량'], 0) + '권';
+    $('kTotal').textContent = won(act.reduce((s, x) => s + x['금액'], 0));
+    const overN = members.filter(m => m.over > 0).length;
+    $('kOver').textContent = overN + '명';
+    $('kOverBox').classList.toggle('alert', overN > 0);
+
+    const st = {}; rows.forEach(x => st[x['상태']] = (st[x['상태']] || 0) + 1);
+    $('statusChips').innerHTML = ['접수', '주문', '수령', '취소'].concat(Object.keys(st).filter(k => ['접수', '주문', '수령', '취소'].indexOf(k) < 0))
+      .map(k => '<span class="chip">' + esc(k) + ' ' + (st[k] || 0) + '건</span>').join('');
+
+    const showRound = !id;
+    $('memberTbl').innerHTML = '<thead><tr>' + (showRound ? '<th>연구회(일자)</th>' : '') +
+      '<th>이름</th><th>휴대폰</th><th class="num">권수</th><th class="num">금액</th><th class="num">한도</th><th class="num">초과</th></tr></thead><tbody>' +
+      (members.length ? members.map(m => '<tr class="' + (m.over ? 'over' : '') + '">' + (showRound ? '<td>' + esc(m.label) + '</td>' : '') +
+        '<td>' + esc(m.name) + '</td><td>' + esc(m.phone) + '</td><td class="num">' + m.books + '</td><td class="num">' + won(m.amount) +
+        '</td><td class="num">' + (m.limit ? won(m.limit) : '-') + '</td><td class="num">' + (m.over ? '<span class="tag">' + won(m.over) + '</span>' : '') + '</td></tr>').join('')
+        : '<tr><td colspan="7" class="meta">신청이 없어요</td></tr>') + '</tbody>';
+
+    $('bookTbl').innerHTML = '<thead><tr><th>도서명</th><th>출판사</th><th class="num">정가</th><th class="num">수량</th><th>신청자</th></tr></thead><tbody>' +
+      (books.length ? books.map(b => '<tr><td>' + esc(b.title) + (b.soldout ? ' <span class="tag">품절·절판</span>' : '') +
+        (b.kyobo ? ' <a href="' + esc(b.kyobo) + '" target="_blank" rel="noopener">↗</a>' : '') + '</td><td>' + esc(b.publisher) +
+        '</td><td class="num">' + won(b.price) + '</td><td class="num">' + b.qty + '</td><td>' + esc(b.names.join(', ')) + '</td></tr>').join('')
+        : '<tr><td colspan="5" class="meta">신청이 없어요</td></tr>') + '</tbody>';
+  }
+
+  /* 엑셀 */
+  function sheetFrom(aoa, widths) {
+    const ws = XLSX.utils.aoa_to_sheet(aoa);
+    ws['!cols'] = widths.map(w => ({ wch: w }));
+    return ws;
+  }
+  function scopeName() {
+    const id = $('roundSel').value, r = id ? roundMap()[id] : null;
+    return (r ? r.label : '전체').replace(/[\\/:*?"<>|]/g, '_');
+  }
+  function exportXlsx(kind) {
+    if (typeof XLSX === 'undefined') return alert('엑셀 도구를 불러오지 못했어요. 새로고침 후 다시 시도해 주세요.');
+    const rows = scope(), wb = XLSX.utils.book_new();
+    if (kind === 'member') {
+      const members = memberGroups(rows).sort((a, b) => String(a.label).localeCompare(String(b.label), 'ko') || String(a.name).localeCompare(String(b.name), 'ko'));
+      const aoa = [['연구회(일자)', '이름', '휴대폰', '도서명', '저자', '역자', '출판사', 'ISBN', '정가', '수량', '금액', '상태', '비고']];
+      members.forEach(m => {
+        m.items.forEach(x => aoa.push([m.label, m.name, mask(m.phone), x['도서명'], x['저자'], x['역자'], x['출판사'], String(x['ISBN']), x['정가'], x['수량'], x['금액'], x['상태'], x['비고']]));
+        aoa.push(['', m.name + ' 소계', '', '', '', '', '', '', '', m.books, m.amount, m.over ? '한도 ' + m.over.toLocaleString('ko-KR') + '원 초과' : '', '']);
+      });
+      XLSX.utils.book_append_sheet(wb, sheetFrom(aoa, [16, 10, 15, 34, 16, 12, 14, 16, 9, 6, 10, 16, 20]), '회원별 신청');
+      const sum = [['연구회(일자)', '이름', '휴대폰', '권수', '금액', '1인 한도', '초과액']];
+      members.forEach(m => sum.push([m.label, m.name, mask(m.phone), m.books, m.amount, m.limit || '', m.over || '']));
+      XLSX.utils.book_append_sheet(wb, sheetFrom(sum, [16, 10, 15, 6, 10, 10, 10]), '회원별 합계');
+      XLSX.writeFile(wb, '도서신청_회원확인용_' + scopeName() + '_' + today() + '.xlsx');
+    } else if (kind === 'order') {
+      const aoa = [['도서명', '저자', '역자', '출판사', 'ISBN', '정가', '수량', '금액', '신청자', '교보문고']];
+      bookGroups(rows).forEach(b => aoa.push([b.title, b.authors, b.translators, b.publisher, String(b.isbn), b.price, b.qty, b.amount, b.names.join(', '), b.kyobo]));
+      XLSX.utils.book_append_sheet(wb, sheetFrom(aoa, [34, 16, 12, 14, 16, 9, 6, 10, 30, 50]), '주문 목록');
+      XLSX.writeFile(wb, '도서신청_주문용_' + scopeName() + '_' + today() + '.xlsx');
+    } else {
+      const keys = Object.keys(rows[0] || A.data.requests[0] || { '신청ID': '' });
+      const aoa = [keys].concat(rows.map(x => keys.map(k => k === 'ISBN' || k === '휴대폰' ? String(x[k] || '') : x[k])));
+      XLSX.utils.book_append_sheet(wb, sheetFrom(aoa, keys.map(k => /도서명|교보/.test(k) ? 34 : 13)), '신청내역');
+      XLSX.writeFile(wb, '도서신청_전체원본_' + scopeName() + '_' + today() + '.xlsx');
+    }
+  }
+
+  $('loginBtn').onclick = login;
+  $('pw').addEventListener('keydown', e => { if (e.key === 'Enter') login(); });
+  $('reloadBtn').onclick = () => load().catch(() => {});
+  $('roundSel').onchange = render;
+  document.querySelectorAll('[data-exp]').forEach(b => b.onclick = () => exportXlsx(b.dataset.exp));
+</script>
+</body>
+</html>
